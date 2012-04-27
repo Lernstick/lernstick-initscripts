@@ -1,0 +1,79 @@
+#!/bin/sh -e
+### BEGIN INIT INFO
+# Provides:          live-update-bootmenu
+# Required-Start:    $local_fs $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      
+# Short-Description: Updates the [sys/iso]linux menu config
+# Description:       Updates the [sys/iso]linux menu config
+### END INIT INFO
+#
+# description: Updates the [sys/iso]linux menu config
+#
+
+# gettext support
+. /etc/default/locale
+export LANG
+. gettext.sh
+export TEXTDOMAIN=live-update-bootmenu
+
+# /live/image must be remounted writeable so that we can edit
+# the config files
+if ! mount -o remount,rw /live/image/
+then
+	echo "could not remount /live/image"
+	exit
+fi
+
+# get current append line
+APPEND="$(cat /proc/cmdline | sed -e 's| BOOT_IMAGE=.*||')"
+
+# get some parameters from the current append line
+for _PARAMETER in ${APPEND}
+do
+	case "${_PARAMETER}" in
+		locales=*)
+			LIVE_LOCALE="${_PARAMETER#*locales=}"
+			;;
+		desktop=*)
+			LIVE_DESKTOP="${_PARAMETER#*desktop=}"
+			;;
+		persistent*)
+			PERSISTENT="true"
+			;;
+	esac
+done
+
+### TRANSLATORS: do *NOT* translate "English (USA)" here but use the name of your locale!
+LOCALE_LABEL="$(gettext "English (USA)")"
+if [ -n "${PERSISTENT}" ]
+then
+	case "${LIVE_DESKTOP}" in
+		kde)
+			DESKTOP_LABEL="KDE"
+			;;
+		gnome)
+			DESKTOP_LABEL="GNOME"
+			;;
+		sugar)
+			DESKTOP_LABEL="Sugar"
+			;;
+		no)
+			DESKTOP_LABEL="$(gettext "Text console")"
+			;;
+	esac
+else
+	DESKTOP_LABEL="$(gettext "Test mode")"
+fi
+TAB_MESSAGE="$(gettext "Press ENTER to boot or TAB to edit a menu entry")"
+AUTOBOOT_MESSAGE="$(gettext "Automatic boot in # second{,s}...")"
+
+# update config files with new values
+sed -i -e "2s|menu label .*|menu label ${LOCALE_LABEL}/${DESKTOP_LABEL}|" /live/image/syslinux/live.cfg
+sed -i -e "4s|append .*|append ${APPEND}|" /live/image/syslinux/live.cfg
+sed -i -e "s|menu tabmsg .*|menu tabmsg ${TAB_MESSAGE}|" /live/image/syslinux/stdmenu.cfg
+sed -i -e "s|menu autoboot .*|menu autoboot ${AUTOBOOT_MESSAGE}|" /live/image/syslinux/stdmenu.cfg
+
+# remount /live/image read-only
+mount -o remount,ro /live/image/

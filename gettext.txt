@@ -1,0 +1,17 @@
+Initialisierung
+---------------
+mkdir -p po/de
+xgettext -L Shell --add-comments=## etc/init.d/live-update-bootmenu
+vi messages.po #header richtig füllen
+cp messages.po po/de_CH/live-update-bootmenu.po
+vi po/de_CH/live-update-bootmenu.po # erste Übersetzung
+cd po; for i in *; do cd $i; msgfmt -o live-update-bootmenu.mo live-update-bootmenu.po; cd ..; done; cd ..
+cd po; for i in *; do cd $i; MDIR="../../usr/share/locale/$i/LC_MESSAGES/"; mkdir -p ${MDIR}; rm -f ${MDIR}/live-update-bootmenu.mo; cp live-update-bootmenu.mo ${MDIR}; cd ..; done; cd ..
+
+Update:
+-------
+xgettext -L Shell --add-comments=## live-update-bootmenu
+msgmerge -U de/live-update-bootmenu.po messages.po
+vi de/live-update-bootmenu.po # Übersetzung aktualisieren
+cd po; for i in *; do cd $i; msgfmt -o live-update-bootmenu.mo live-update-bootmenu.po; cd ..; done; cd ..
+cd po; for i in *; do cd $i; MDIR="../../usr/share/locale/$i/LC_MESSAGES/"; mkdir -p ${MDIR}; rm -f ${MDIR}/live-update-bootmenu.mo; cp live-update-bootmenu.mo ${MDIR}; cd ..; done; cd ..

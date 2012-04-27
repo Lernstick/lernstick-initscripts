@@ -1,0 +1,63 @@
+#!/bin/sh -e
+### BEGIN INIT INFO
+# Provides:          live-desktop
+# Required-Start:    $local_fs $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Desktop selection for Debian Live
+# Description:       Sets up the desktop environment of Debian Live based on boot parameters
+# X-Start-Before:    kdm gdm
+### END INIT INFO
+#
+# description: Desktop selection for Debian Live
+#
+
+LOGFILE=/var/log/live-desktop
+
+for _PARAMETER in $(cat /proc/cmdline)
+do
+	case "${_PARAMETER}" in
+		desktop=*)
+			LIVE_DESKTOP="${_PARAMETER#*desktop=}"
+			;;
+	esac
+done
+
+echo "LIVE_DESKTOP: \"${LIVE_DESKTOP}\"" > ${LOGFILE}
+
+# sometimes users end up with an empty .dmrc file
+# this heavily confuses kdm (it starts just gnome-terminal) and makes users mad
+# therefore we always remove this file here
+rm -f /home/user/.dmrc
+
+case "${LIVE_DESKTOP}" in
+        kde)
+                echo "setting up kde as default desktop" >> ${LOGFILE}
+                update-alternatives --set x-session-manager /usr/bin/startkde >> ${LOGFILE} 2>&1
+                echo "/usr/bin/kdm" > /etc/X11/default-display-manager
+                ;;
+
+        gnome)
+                echo "setting up gnome as default desktop" >> ${LOGFILE}
+                update-alternatives --set x-session-manager /usr/bin/gnome-session >> ${LOGFILE} 2>&1
+                echo "/usr/sbin/gdm" > /etc/X11/default-display-manager
+                ;;
+
+        sugar)
+                echo "setting up sugar as default desktop" >> ${LOGFILE}
+		cat > /home/user/.dmrc << EOF
+[Desktop]
+Session=sugar
+EOF
+                echo "/usr/bin/kdm" > /etc/X11/default-display-manager
+                ;;
+
+        no)
+                echo "setting up terminal as default desktop" >> ${LOGFILE}
+                echo "" > /etc/X11/default-display-manager
+                ;;
+esac
+
+echo "done." >> ${LOGFILE}
+

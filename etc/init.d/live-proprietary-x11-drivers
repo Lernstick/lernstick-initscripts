@@ -1,0 +1,264 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          live-proprietary-x11-drivers
+# Required-Start:    $local_fs $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: enables proprietary X11 drivers
+# Description:       enables proprietary X11 drivers (NVIDIA or ATI) where available
+# X-Start-Before:    kdm gdm
+### END INIT INFO
+#
+# description: enables proprietary X11 drivers
+#
+
+LOG=/var/log/proprietary_x11_driver.log
+
+get_versions()
+{
+	for i in ${1}*
+	do
+		if [ -d ${i} ]
+		then
+			VERSION=$(echo "${i}" | awk -F_ '{ print $2 }')
+			if [ -n "${VERSIONS}" ]
+			then
+				VERSIONS="${VERSIONS}
+${VERSION}"
+			else
+				VERSIONS="${VERSION}"
+			fi
+		fi
+	done
+	echo "${VERSIONS}" | sort -g -r
+}
+
+setNoDisplay()
+{
+	DESKTOP_FILE="${1}"
+	VALUE="${2}"
+	if grep -q ^NoDisplay= "${DESKTOP_FILE}"
+	then
+		# the desktop file already has a "NoDisplay=" line
+		sed -i "s|^NoDisplay=.*|NoDisplay=${VALUE}|" "${DESKTOP_FILE}"
+	else
+		# the desktop file has NO "NoDisplay=" line yet
+		echo "NoDisplay=${VALUE}" >> "${DESKTOP_FILE}"
+	fi
+}
+
+showApplication()
+{
+	echo "showing ${1}" >>${LOG}
+	setNoDisplay "${1}" "false"
+}
+
+hideApplication()
+{
+	echo "hiding ${1}" >>${LOG}
+	setNoDisplay "${1}" "true"
+}
+
+cond_ln()
+{
+        # this is a conditional ln
+        # (only link when original file exists)
+        if [ -f ${1} ]
+        then
+                echo "${2} -> ${1}" >>${LOG}
+                ln -sf ${@}
+        else
+                echo "removing ${2}" >>${LOG}
+                rm -f ${2}
+        fi
+}
+
+activate_nvidia()
+{
+        # I have no idea why, but after upgrading the driver package
+        # the OLD(!) and DELETED(!) nvidia kernel module was already loaded.
+        # Therefore we remove the nvidia module explicitly before modprobing.
+        rmmod nvidia >>${LOG} 2>&1
+
+        NVIDIA_DIR=/opt/nvidia_${VERSION}/
+
+        # load the correct version of the nvidia kernel module
+        MODULE_SUFFIX=`echo ${VERSION} | sed -e "s/\./_/g"`
+        echo "trying to load kernel module nvidia_${MODULE_SUFFIX}" >>${LOG}
+        modprobe -v nvidia_${MODULE_SUFFIX} >>${LOG} 2>&1
+        lsmod >>${LOG} 2>&1
+
+        # set all necessary links
+        if [ ! -d /usr/lib/tls ]
+        then
+                mkdir /usr/lib/tls
+        fi
+        echo "" >>${LOG}
+        echo "creating NVIDIA symlinks:" >>${LOG}
+        echo "-------------------------" >>${LOG}
+        cond_ln ${NVIDIA_DIR}usr/lib/libcuda.so.${VERSION} /usr/lib/libcuda.so
+        cond_ln ${NVIDIA_DIR}usr/lib/libcuda.so.${VERSION} /usr/lib/libcuda.so.1
+        cond_ln ${NVIDIA_DIR}usr/lib/libGLcore.so.${VERSION} /usr/lib/libGLcore.so
+        cond_ln ${NVIDIA_DIR}usr/lib/libGLcore.so.${VERSION} /usr/lib/libGLcore.so.1
+        cond_ln ${NVIDIA_DIR}usr/lib/libnvidia-cfg.so.${VERSION} /usr/lib/libnvidia-cfg.so
+        cond_ln ${NVIDIA_DIR}usr/lib/libnvidia-cfg.so.${VERSION} /usr/lib/libnvidia-cfg.so.1
+        cond_ln ${NVIDIA_DIR}usr/lib/libnvidia-compiler.so.${VERSION} /usr/lib/libnvidia-compiler.so.${VERSION}
+        cond_ln ${NVIDIA_DIR}usr/lib/libnvidia-glcore.so.${VERSION} /usr/lib/libnvidia-glcore.so.${VERSION}
+        cond_ln ${NVIDIA_DIR}usr/lib/libnvidia-tls.so.${VERSION} /usr/lib/libnvidia-tls.so
+        cond_ln ${NVIDIA_DIR}usr/lib/libnvidia-tls.so.${VERSION} /usr/lib/libnvidia-tls.so.1
+        cond_ln ${NVIDIA_DIR}usr/lib/libnvidia-tls.so.${VERSION} /usr/lib/libnvidia-tls.so.${VERSION}
+        cond_ln ${NVIDIA_DIR}usr/lib/libvdpau.so.${VERSION} /usr/lib/libvdpau.so
+        cond_ln ${NVIDIA_DIR}usr/lib/libvdpau.so.${VERSION} /usr/lib/libvdpau.so.1
+        cond_ln ${NVIDIA_DIR}usr/lib/libXvMCNVIDIA.a /usr/lib/libXvMCNVIDIA.a
+        cond_ln ${NVIDIA_DIR}usr/lib/libXvMCNVIDIA.so.${VERSION} /usr/lib/libXvMCNVIDIA_dynamic.so
+        cond_ln ${NVIDIA_DIR}usr/lib/libXvMCNVIDIA.so.${VERSION} /usr/lib/libXvMCNVIDIA_dynamic.so.1
+        cond_ln ${NVIDIA_DIR}usr/lib/tls/libnvidia-tls.so.${VERSION} /usr/lib/tls/libnvidia-tls.so
+        cond_ln ${NVIDIA_DIR}usr/lib/tls/libnvidia-tls.so.${VERSION} /usr/lib/tls/libnvidia-tls.so.1
+        cond_ln ${NVIDIA_DIR}usr/lib/tls/libnvidia-tls.so.${VERSION} /usr/lib/tls/libnvidia-tls.so.${VERSION}
+        cond_ln ${NVIDIA_DIR}usr/lib/xorg/modules/drivers/nvidia_drv.so /usr/lib/xorg/modules/drivers/nvidia_drv.so
+        cond_ln ${NVIDIA_DIR}usr/lib/xorg/modules/libnvidia-wfb.so.${VERSION} /usr/lib/xorg/modules/libnvidia-wfb.so
+        cond_ln ${NVIDIA_DIR}usr/lib/xorg/modules/libnvidia-wfb.so.${VERSION} /usr/lib/xorg/modules/libnvidia-wfb.so.1
+
+	# use nvidia glx
+	update-alternatives --set glx /opt/nvidia_${VERSION}/usr/lib/ >>${LOG}
+
+	# show NVIDIA settings in menu
+	showApplication /usr/share/applications/nvidia-settings.desktop
+
+	# hide krandrtray (xrandr just does not work with NVIDIA cards)
+	hideApplication /usr/share/applications/kde4/krandrtray.desktop
+
+	# activating NVIDIA implies removing ATI settings
+	remove_ati_settings
+
+	# create minimal xorg.conf to enforce usage of the nvidia driver
+	cat > /etc/X11/xorg.conf << EOF
+Section "Device"
+    Identifier    "Configured Video Device"
+    Driver        "nvidia"
+    Option        "NoLogo" "true"
+EndSection
+EOF
+}
+
+activate_ati()
+{
+	# use fglrx glx
+	update-alternatives --set glx /usr/lib/fglrx >>${LOG}
+
+	# show ATI settings in menu
+	showApplication /usr/share/applications/amdcccle.desktop
+
+	# show krandrtray
+        showApplication /usr/share/applications/kde4/krandrtray.desktop
+
+	# activating ATI implies removing NVIDIA settings
+	remove_nvidia_settings
+
+	# create minimal xorg.conf to enforce usage of the fglrx driver
+	cat > /etc/X11/xorg.conf << EOF
+Section "Device"
+    Identifier    "Configured Video Device"
+    Driver        "fglrx"
+EndSection
+EOF
+}
+
+activate_original()
+{
+	# use fglrx glx
+	update-alternatives --set glx /usr/lib/mesa-diverted >>${LOG}
+
+	# show krandrtray
+        showApplication /usr/share/applications/kde4/krandrtray.desktop
+
+	# remove ATI and NVIDIA settings
+	remove_ati_settings
+	remove_nvidia_settings
+}
+
+remove_ati_settings()
+{
+	# remove ATI settings from menu
+	hideApplication /usr/share/applications/amdcccle.desktop
+}
+
+remove_nvidia_settings()
+{
+	# remove NVIDIA settings from menu
+	hideApplication /usr/share/applications/nvidia-settings.desktop
+}
+
+find_card()
+{
+	VENDOR_NAME=${1}
+	VENDOR_ID=${2}
+	VERSIONS="${3}"
+	VENDOR_DEVICES=$(lspci -m -n -d ${VENDOR_ID}:*)
+        echo "${VENDOR_NAME} devices: \"${VENDOR_DEVICES}\"" >>${LOG}
+	if [ -n "${VENDOR_DEVICES}" ]
+	then
+		# there are some devices of the specified vendor in the system
+		echo "${VENDOR_DEVICES}" | while read blah blah vendor PCI_ID blah
+                do
+                        # remove quotes around PCI_ID
+                        PCI_ID=$(echo ${PCI_ID} | sed -e "s/\"//g")
+                        # add "0x" prefix
+                        PCI_ID="0x${PCI_ID}"
+                        echo "PCI ID: \"${PCI_ID}\"" >>${LOG}
+			for VERSION in ${VERSIONS}
+			do
+				echo "checking version \"${VERSION}\"" >>${LOG}
+	                        # check, if PCI_ID is a supported GPU of the specified vendor
+				CARD=$(grep -is ${PCI_ID} /opt/${VENDOR_NAME}_${VERSION}/pci-ids)
+				if [ -n "${CARD}" ]
+				then
+					#TODO: remove suffix
+					echo "found ${VENDOR_NAME} card: \"${CARD}\"" >>${LOG}
+					# this is a subshell (because of the pipe in front of "while" above)
+					# we can not set any variable here that is visible outside
+					# the only thing we can do is echoing a string
+					# what we need to know is the version of the driver to activate
+					# therefore we echo this information...
+					echo "${VERSION}"
+					exit 0
+				fi
+			done
+		done
+	fi
+}
+
+# remove old xorg.conf
+rm -f /etc/X11/xorg.conf
+
+>${LOG}
+NVIDIA_VERSIONS=$(get_versions /opt/nvidia_)
+echo "NVIDIA_VERSIONS:" >>${LOG}
+echo "${NVIDIA_VERSIONS}" >>${LOG}
+echo "" >> ${LOG}
+ATI_VERSIONS=$(get_versions /opt/ati_)
+echo "ATI_VERSIONS:" >>${LOG}
+echo "${ATI_VERSIONS}" >>${LOG}
+echo "" >> ${LOG}
+
+# first try finding NVIDIA cards
+VERSION=`find_card nvidia 10de "${NVIDIA_VERSIONS}"`
+
+if [ -n "${VERSION}" ]
+then
+	# NVIDIA GPU found
+	activate_nvidia >>${LOG} 2>&1
+else
+	# no NVIDIA GPU found, try finding a ATI GPU
+	VERSION=`find_card ati 1002 "${ATI_VERSIONS}"`
+	if [ -n "${VERSION}" ]
+	then
+		# ATI GPU found
+		activate_ati >>${LOG} 2>&1
+	else
+		# there are neither NVIDIA nor ATI GPUs in the system
+		# we have to remove the desktop files, etc...
+		activate_original >>${LOG} 2>&1
+	fi
+fi

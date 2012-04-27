@@ -1,0 +1,16 @@
+#!/bin/sh -e
+### BEGIN INIT INFO
+# Provides:          live-phonon
+# Required-Start:    $local_fs $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Removes the phonon config file
+# Description:       Removes the phonon config file
+# X-Start-Before:    kdm gdm
+### END INIT INFO
+#
+# description: Removes the phonon config file
+#
+
+rm -f /home/user/.kde/share/config/phonondevicesrc

@@ -1,0 +1,12 @@
+Source: lernstick-initscripts-wheezy
+Section: admin
+Priority: required
+Maintainer: Ronny Standtke <ronny.standtke@fhnw.ch>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.7.3
+
+Package: lernstick-initscripts-wheezy
+Architecture: all
+Depends: gettext-base, sysv-rc, lsb-release, insserv, sqlite3
+Description: lernstick initscripts
+ The required initscripts for the lernstick distribution.
