@@ -41,7 +41,7 @@ case "${LIVE_DESKTOP}" in
         gnome)
                 echo "setting up gnome as default desktop" >> ${LOGFILE}
                 update-alternatives --set x-session-manager /usr/bin/gnome-session >> ${LOGFILE} 2>&1
-                echo "/usr/sbin/gdm" > /etc/X11/default-display-manager
+                echo "/usr/sbin/gdm3" > /etc/X11/default-display-manager
                 ;;
 
         sugar)

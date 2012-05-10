@@ -1,0 +1,6 @@
+build-stamp
+configure-stamp
+debian/files
+debian/lernstick-initscripts-wheezy.debhelper.log
+debian/lernstick-initscripts-wheezy.substvars
+debian/lernstick-initscripts-wheezy/
