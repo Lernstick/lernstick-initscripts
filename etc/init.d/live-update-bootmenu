@@ -12,6 +12,13 @@
 # description: Updates the [sys/iso]linux menu config
 #
 
+if [ ! -d /live/image/syslinuxx/ ]
+then
+	# there is no syslinux directory
+	# (probably booted from iso)
+	exit 0
+fi
+
 # gettext support
 . /etc/default/locale
 export LANG
