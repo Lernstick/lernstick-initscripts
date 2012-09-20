@@ -12,7 +12,7 @@
 # description: Updates the [sys/iso]linux menu config
 #
 
-if [ ! -d /live/image/syslinuxx/ ]
+if [ ! -d /live/image/syslinux/ ]
 then
 	# there is no syslinux directory
 	# (probably booted from iso)

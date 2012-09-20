@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.4-1) unstable; urgency=low
+
+  * fixed typo in bootmenu update script
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Thu, 20 Sep 2012 11:29:22 +0200
+
 lernstick-initscripts-wheezy (1.3-1) unstable; urgency=low
 
   * updated proprietary GPU detection script
