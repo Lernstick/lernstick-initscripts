@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.6-1) unstable; urgency=low
+
+  * ignore display device subclass in proprietary GPU detection script
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Thu, 20 Sep 2012 17:10:22 +0200
+
 lernstick-initscripts-wheezy (1.5-1) unstable; urgency=low
 
   * fixed persistence boot parameter in bootmenu update script
