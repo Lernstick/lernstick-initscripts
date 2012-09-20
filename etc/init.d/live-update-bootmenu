@@ -46,7 +46,7 @@ do
 		desktop=*)
 			LIVE_DESKTOP="${_PARAMETER#*desktop=}"
 			;;
-		persistent*)
+		persistence*)
 			PERSISTENT="true"
 			;;
 	esac
