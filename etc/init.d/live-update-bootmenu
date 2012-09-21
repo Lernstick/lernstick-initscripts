@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 ### BEGIN INIT INFO
 # Provides:          live-update-bootmenu
 # Required-Start:    $local_fs $remote_fs
@@ -12,10 +12,38 @@
 # description: Updates the [sys/iso]linux menu config
 #
 
-if [ ! -d /live/image/syslinux/ ]
+IMAGE_DIR="/live/image"
+
+# the image directory must be remounted writeable
+# so that we can edit the config files
+if ! mount -o remount,rw ${IMAGE_DIR}
 then
-	# there is no syslinux directory
-	# (probably booted from iso)
+	# it's ok, system was probably booted from iso...
+	exit 0
+fi
+
+# determine correct configuration directory
+if [ -d ${IMAGE_DIR}/isolinux/ ]
+then
+	CONFIG_DIR="${IMAGE_DIR}/isolinux"
+elif [ -d ${IMAGE_DIR}/syslinux/ ]
+then
+	CONFIG_DIR="${IMAGE_DIR}/syslinux"
+else
+	echo "no supported configuration found"
+	exit 1
+fi
+
+# check writability of configuration directory
+#
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ! This test only works reliably with bash on      !
+# ! read-only filesystems! Therefore, do not change !
+# ! the first line with /bin/bash in this script!   !
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+if [ ! -w ${CONFIG_DIR} ]
+then
+	# it's ok, system was probably booted from iso...
 	exit 0
 fi
 
@@ -24,14 +52,6 @@ fi
 export LANG
 . gettext.sh
 export TEXTDOMAIN=live-update-bootmenu
-
-# /live/image must be remounted writeable so that we can edit
-# the config files
-if ! mount -o remount,rw /live/image/
-then
-	echo "could not remount /live/image"
-	exit
-fi
 
 # get current append line
 APPEND="$(cat /proc/cmdline | sed -e 's| BOOT_IMAGE=.*||')"
@@ -77,10 +97,10 @@ TAB_MESSAGE="$(gettext "Press ENTER to boot or TAB to edit a menu entry")"
 AUTOBOOT_MESSAGE="$(gettext "Automatic boot in # second{,s}...")"
 
 # update config files with new values
-sed -i -e "2s|menu label .*|menu label ${LOCALE_LABEL}/${DESKTOP_LABEL}|" /live/image/syslinux/live.cfg
-sed -i -e "4s|append .*|append ${APPEND}|" /live/image/syslinux/live.cfg
-sed -i -e "s|menu tabmsg .*|menu tabmsg ${TAB_MESSAGE}|" /live/image/syslinux/stdmenu.cfg
-sed -i -e "s|menu autoboot .*|menu autoboot ${AUTOBOOT_MESSAGE}|" /live/image/syslinux/stdmenu.cfg
+sed -i -e "2s|menu label .*|menu label ${LOCALE_LABEL}/${DESKTOP_LABEL}|" ${CONFIG_DIR}/live.cfg
+sed -i -e "4s|append .*|append ${APPEND}|" ${CONFIG_DIR}/live.cfg
+sed -i -e "s|menu tabmsg .*|menu tabmsg ${TAB_MESSAGE}|" ${CONFIG_DIR}/stdmenu.cfg
+sed -i -e "s|menu autoboot .*|menu autoboot ${AUTOBOOT_MESSAGE}|" ${CONFIG_DIR}/stdmenu.cfg
 
 # remount /live/image read-only
 mount -o remount,ro /live/image/

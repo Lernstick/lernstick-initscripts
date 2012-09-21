@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.7-1) unstable; urgency=low
+
+  * support isolinux (if writable) in bootmenu update script
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Fri, 21 Sep 2012 11:41:16 +0200
+
 lernstick-initscripts-wheezy (1.6-1) unstable; urgency=low
 
   * ignore display device subclass in proprietary GPU detection script
