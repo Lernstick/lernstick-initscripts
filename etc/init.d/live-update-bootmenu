@@ -47,60 +47,109 @@ then
 	exit 0
 fi
 
-# gettext support
-. /etc/default/locale
-export LANG
-. gettext.sh
-export TEXTDOMAIN=live-update-bootmenu
+XMLBOOT_CONFIG="${CONFIG_DIR}/xmlboot.config"
 
 # get current append line
 APPEND="$(cat /proc/cmdline | sed -e 's| BOOT_IMAGE=.*||')"
 
-# get some parameters from the current append line
+# update configs in xmlboot config file
+update_config()
+{
+	cat ${XMLBOOT_CONFIG} | \
+	xmlstarlet ed -d "/xmlboot/configs/config[@id='${1}']/option/@selected" | \
+	xmlstarlet ed -i "/xmlboot/configs/config[@id='${1}']/option[@append='${2}']" \
+		--type attr -n selected -v true > ${XMLBOOT_CONFIG}.tmp
+	mv ${XMLBOOT_CONFIG}.tmp ${XMLBOOT_CONFIG}
+}
 for _PARAMETER in ${APPEND}
 do
 	case "${_PARAMETER}" in
 		locales=*)
-			LIVE_LOCALE="${_PARAMETER#*locales=}"
+			update_config "language" "${_PARAMETER}"
 			;;
-		desktop=*)
+
+		keyboard-layouts=*)
+			update_config "keyboard" "${_PARAMETER}"
+			;;
+
+		desktop*)
 			LIVE_DESKTOP="${_PARAMETER#*desktop=}"
-			;;
-		persistence*)
-			PERSISTENT="true"
-			;;
+			case "${LIVE_DESKTOP}" in
+				kde)
+					update_config "desktop" "desktop=kde nottyautologin"
+					;;
+				gnome)
+					update_config "desktop" "desktop=gnome nottyautologin"
+					;;
+				lxde)
+					update_config "desktop" "desktop=lxde nottyautologin"
+					;;
+				sugar)
+					update_config "desktop" "desktop=sugar nottyautologin"
+					;;
+				no)
+					update_config "desktop" "desktop=no"
+			esac
 	esac
 done
 
-### TRANSLATORS: do *NOT* translate "English (USA)" here but use the name of your locale!
-LOCALE_LABEL="$(gettext "English (USA)")"
-if [ -n "${PERSISTENT}" ]
-then
-	case "${LIVE_DESKTOP}" in
-		kde)
-			DESKTOP_LABEL="KDE"
-			;;
-		gnome)
-			DESKTOP_LABEL="GNOME"
-			;;
-		sugar)
-			DESKTOP_LABEL="Sugar"
-			;;
-		no)
-			DESKTOP_LABEL="$(gettext "Text console")"
-			;;
-	esac
-else
-	DESKTOP_LABEL="$(gettext "Test mode")"
-fi
-TAB_MESSAGE="$(gettext "Press ENTER to boot or TAB to edit a menu entry")"
-AUTOBOOT_MESSAGE="$(gettext "Automatic boot in # second{,s}...")"
+# update options in xmlboot config file
+deselect_option()
+{
+	cat ${XMLBOOT_CONFIG} | \
+	xmlstarlet ed -d "/xmlboot/options/option[@id='${1}']/@selected" \
+		> ${XMLBOOT_CONFIG}.tmp
+	mv ${XMLBOOT_CONFIG}.tmp ${XMLBOOT_CONFIG}
+}
 
-# update config files with new values
-sed -i -e "2s|menu label .*|menu label ${LOCALE_LABEL}/${DESKTOP_LABEL}|" ${CONFIG_DIR}/live.cfg
-sed -i -e "4s|append .*|append ${APPEND}|" ${CONFIG_DIR}/live.cfg
-sed -i -e "s|menu tabmsg .*|menu tabmsg ${TAB_MESSAGE}|" ${CONFIG_DIR}/stdmenu.cfg
-sed -i -e "s|menu autoboot .*|menu autoboot ${AUTOBOOT_MESSAGE}|" ${CONFIG_DIR}/stdmenu.cfg
+select_option()
+{
+	cat ${XMLBOOT_CONFIG} | \
+	xmlstarlet ed -d "/xmlboot/options/option[@id='${1}']/@selected" | \
+	xmlstarlet ed -i "/xmlboot/options/option[@id='${1}']" \
+		--type attr -n selected -v true > ${XMLBOOT_CONFIG}.tmp
+	mv ${XMLBOOT_CONFIG}.tmp ${XMLBOOT_CONFIG}
+}
+
+update_selected_option()
+{
+	if grep -q "${1}" /proc/cmdline
+	then
+		select_option "${2}"
+	else
+		deselect_option "${2}"
+	fi
+}
+update_selected_option "swapon" "swap_partition"
+update_selected_option "swapfile=auto" "swap_file"
+update_selected_option "debug=1" "debug"
+
+update_nonselected_option()
+{
+	if ! grep -q "${1}" /proc/cmdline
+	then
+		select_option "${2}"
+	else
+		deselect_option "${2}"
+	fi
+}
+update_nonselected_option "persistent" "persistence"
+update_nonselected_option "quiet splash" "messages"
+update_nonselected_option "nolapic_timer" "lapic_timer"
+update_nonselected_option "nohz=off" "dynamic_ticks"
+
+CUSTOM_OPTIONS="$(cat /proc/cmdline | sed 's|.*custom_options \(.*\)|\1|1')"
+cat ${XMLBOOT_CONFIG} | \
+xmlstarlet ed -u "/xmlboot/custom_options/@text" -v "${CUSTOM_OPTIONS}" > ${XMLBOOT_CONFIG}.tmp
+mv ${XMLBOOT_CONFIG}.tmp ${XMLBOOT_CONFIG}
+
+# special handling for PAE
+if grep -q initrd2 /proc/cmdline
+then
+	select_option "pae"
+else
+	deselect_option "pae"
+fi
 
 # remount /live/image read-only
 mount -o remount,ro /live/image/
