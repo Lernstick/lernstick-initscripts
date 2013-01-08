@@ -12,7 +12,7 @@
 # description: Updates the [sys/iso]linux menu config
 #
 
-IMAGE_DIR="/live/image"
+IMAGE_DIR="/lib/live/mount/medium/"
 
 # the image directory must be remounted writeable
 # so that we can edit the config files
@@ -80,6 +80,9 @@ do
 					;;
 				gnome)
 					update_config "desktop" "desktop=gnome nottyautologin"
+					;;
+				xfce)
+					update_config "desktop" "desktop=xfce nottyautologin"
 					;;
 				lxde)
 					update_config "desktop" "desktop=lxde nottyautologin"
@@ -152,4 +155,4 @@ else
 fi
 
 # remount /live/image read-only
-mount -o remount,ro /live/image/
+mount -o remount,ro ${IMAGE_DIR}

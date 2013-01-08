@@ -1,3 +1,21 @@
+lernstick-initscripts-wheezy (1.11-1) unstable; urgency=low
+
+  * added support for XFCE
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Tue, 08 Jan 2013 10:21:01 +0100
+
+lernstick-initscripts-wheezy (1.10-1) unstable; urgency=low
+
+  * added support for LXDE
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Fri, 04 Jan 2013 20:19:29 +0100
+
+lernstick-initscripts-wheezy (1.9-1) unstable; urgency=low
+
+  * fixed image directory for wheezy
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Fri, 04 Jan 2013 18:39:10 +0100
+
 lernstick-initscripts-wheezy (1.8-1) unstable; urgency=low
 
   * added support for xmlboot

@@ -44,6 +44,25 @@ case "${LIVE_DESKTOP}" in
                 echo "/usr/sbin/gdm3" > /etc/X11/default-display-manager
                 ;;
 
+        xfce)
+                echo "setting up xfce as default desktop" >> ${LOGFILE}
+		cat > /home/user/.dmrc << EOF
+[Desktop]
+Session=xfce
+EOF
+                echo "/usr/bin/kdm" > /etc/X11/default-display-manager
+                ;;
+
+
+        lxde)
+                echo "setting up lxde as default desktop" >> ${LOGFILE}
+		cat > /home/user/.dmrc << EOF
+[Desktop]
+Session=LXDE
+EOF
+                echo "/usr/bin/kdm" > /etc/X11/default-display-manager
+                ;;
+
         sugar)
                 echo "setting up sugar as default desktop" >> ${LOGFILE}
 		cat > /home/user/.dmrc << EOF
