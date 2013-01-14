@@ -165,6 +165,7 @@ find_driver() {
 
 # remove old xorg.conf
 rm -f /etc/X11/xorg.conf
+rm -f /etc/X11/xorg.conf.d/99-live.conf
 
 # reset log file
 >${LOG}

@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.12-1) unstable; urgency=low
+
+  * also remove xorg conf created by live config
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Mon, 14 Jan 2013 19:05:49 +0100
+
 lernstick-initscripts-wheezy (1.11-1) unstable; urgency=low
 
   * added support for XFCE
