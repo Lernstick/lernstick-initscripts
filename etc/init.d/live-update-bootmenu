@@ -99,12 +99,12 @@ do
 	esac
 done
 # special handling for live-media config
-if grep -q "live-media=removable" /proc/cmdline
-then
-	select_config "live-media" "id" "removable"
-elif grep -q "live-media=removable-usb" /proc/cmdline
+if grep -q "live-media=removable-usb" /proc/cmdline
 then
 	select_config "live-media" "id" "removable-usb"
+elif grep -q "live-media=removable" /proc/cmdline
+then
+	select_config "live-media" "id" "removable"
 else
 	select_config "live-media" "id" "any"
 fi
