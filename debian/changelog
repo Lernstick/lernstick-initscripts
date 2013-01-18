@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.13-1) unstable; urgency=low
+
+  * updated live-update-bootmenu, removed gettext files
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Fri, 18 Jan 2013 18:37:55 +0100
+
 lernstick-initscripts-wheezy (1.12-1) unstable; urgency=low
 
   * also remove xorg conf created by live config
