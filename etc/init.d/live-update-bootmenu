@@ -154,7 +154,7 @@ update_nonselected_option "quiet splash" "messages"
 update_nonselected_option "nolapic_timer" "lapic_timer"
 update_nonselected_option "nohz=off" "dynamic_ticks"
 
-CUSTOM_OPTIONS="$(cat /proc/cmdline | sed 's|.*custom_options \(.*\)|\1|1')"
+CUSTOM_OPTIONS="$(cat /proc/cmdline | grep "custom_options" | sed 's|.*custom_options \(.*\)|\1|1')"
 cat ${XMLBOOT_CONFIG} | \
 xmlstarlet ed -u "/xmlboot/custom_options/@text" -v "${CUSTOM_OPTIONS}" > ${XMLBOOT_CONFIG}.tmp
 mv ${XMLBOOT_CONFIG}.tmp ${XMLBOOT_CONFIG}
