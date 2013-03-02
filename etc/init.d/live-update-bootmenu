@@ -9,7 +9,7 @@
 # Description:       Updates the [sys/iso]linux menu config
 ### END INIT INFO
 #
-# description: Updates the [sys/iso]linux menu config
+# description: Updates the [sys/iso]linux and grub menu config
 #
 
 IMAGE_DIR="/lib/live/mount/medium/"
@@ -48,6 +48,8 @@ then
 fi
 
 XMLBOOT_CONFIG="${CONFIG_DIR}/xmlboot.config"
+GRUB32_CONFIG="${IMAGE_DIR}/boot/grub-i386-efi/grub.cfg"
+GRUB64_CONFIG="${IMAGE_DIR}/boot/grub-x86_64-efi/grub.cfg"
 
 # get current append line
 APPEND="$(cat /proc/cmdline | sed -e 's| BOOT_IMAGE=.*||')"
@@ -64,49 +66,53 @@ select_config()
 		--type attr -n selected -v true > ${XMLBOOT_CONFIG}.tmp
 	mv ${XMLBOOT_CONFIG}.tmp ${XMLBOOT_CONFIG}
 }
+
+set_grub_config()
+{
+	ATTRIBUTE_ID="${1}"
+	ATTRIBUTE_VALUE="${2}"
+	sed -i "0,/${ATTRIBUTE_ID}/{s/${ATTRIBUTE_ID}=.*/${ATTRIBUTE_ID}=\"${ATTRIBUTE_VALUE}\"/}" "${GRUB32_CONFIG}"
+	sed -i "0,/${ATTRIBUTE_ID}/{s/${ATTRIBUTE_ID}=.*/${ATTRIBUTE_ID}=\"${ATTRIBUTE_VALUE}\"/}" "${GRUB64_CONFIG}"
+}
+
 for _PARAMETER in ${APPEND}
 do
 	case "${_PARAMETER}" in
 		locales=*)
 			select_config "language" "append" "${_PARAMETER}"
+			LIVE_LOCALES="${_PARAMETER#*locales=}"
+			set_grub_config "LOCALES" "${LIVE_LOCALES}"
 			;;
 
 		keyboard-layouts=*)
 			select_config "keyboard" "append" "${_PARAMETER}"
+			LIVE_KEYBOARD="${_PARAMETER#*keyboard-layouts=}"
+			set_grub_config "KEYBOARD" "${LIVE_KEYBOARD}"
 			;;
 
 		desktop*)
 			LIVE_DESKTOP="${_PARAMETER#*desktop=}"
-			case "${LIVE_DESKTOP}" in
-				kde)
-					select_config "desktop" "id" "kde"
-					;;
-				gnome)
-					select_config "desktop" "id" "gnome"
-					;;
-				xfce)
-					select_config "desktop" "id" "xfce"
-					;;
-				lxde)
-					select_config "desktop" "id" "lxde"
-					;;
-				sugar)
-					select_config "desktop" "id" "sugar"
-					;;
-				no)
-					select_config "desktop" "id" "no"
-			esac
+			select_config "desktop" "id" "${LIVE_DESKTOP}"
+			if [ "${LIVE_DESKTOP}" = "no" ]
+			then
+				set_grub_config "DESKTOP" "${LIVE_DESKTOP}"
+			else
+				set_grub_config "DESKTOP" "${LIVE_DESKTOP} nottyautologin"
+			fi
 	esac
 done
 # special handling for live-media config
 if grep -q "live-media=removable-usb" /proc/cmdline
 then
 	select_config "live-media" "id" "removable-usb"
+	set_grub_config "LIVE_MEDIA" "live-media=removable-usb live-media-timeout=10"
 elif grep -q "live-media=removable" /proc/cmdline
 then
 	select_config "live-media" "id" "removable"
+	set_grub_config "LIVE_MEDIA" "live-media=removable live-media-timeout=10"
 else
 	select_config "live-media" "id" "any"
+	set_grub_config "LIVE_MEDIA" ""
 fi
 
 # update options in xmlboot config file
@@ -149,7 +155,7 @@ update_nonselected_option()
 		deselect_option "${2}"
 	fi
 }
-update_nonselected_option "persistent" "persistence"
+update_nonselected_option "persistence" "persistence"
 update_nonselected_option "quiet splash" "messages"
 update_nonselected_option "nolapic_timer" "lapic_timer"
 update_nonselected_option "nohz=off" "dynamic_ticks"
@@ -166,6 +172,24 @@ then
 else
 	deselect_option "pae"
 fi
+
+# some more grub specific handling
+update_selected_grub_option()
+{
+	PARAMETER="${1}"
+	ATTRIBUTE_ID="${2}"
+	ATTRIBUTE_VALUE="${3}"
+	if grep -q "${PARAMETER}" /proc/cmdline
+	then
+		set_grub_config "${ATTRIBUTE_ID}" "${ATTRIBUTE_VALUE}"
+	else
+		set_grub_config "${ATTRIBUTE_ID}" ""
+	fi
+}
+update_selected_grub_option "persistence" "PERSISTENCE" "persistence forcepersistentfsck"
+update_selected_grub_option "swapon" "SWAP" "swapon"
+update_selected_grub_option "swapfile=auto" "SWAP_FILE" "swapfile=auto"
+update_selected_grub_option "quiet" "QUIET" "quiet splash"
 
 # remount /live/image read-only
 mount -o remount,ro ${IMAGE_DIR}
