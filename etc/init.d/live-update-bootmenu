@@ -48,8 +48,7 @@ then
 fi
 
 XMLBOOT_CONFIG="${CONFIG_DIR}/xmlboot.config"
-GRUB32_CONFIG="${IMAGE_DIR}/boot/grub-i386-efi/grub.cfg"
-GRUB64_CONFIG="${IMAGE_DIR}/boot/grub-x86_64-efi/grub.cfg"
+GRUB_CONFIG="${IMAGE_DIR}/boot/grub/grub.cfg"
 
 # get current append line
 APPEND="$(cat /proc/cmdline | sed -e 's| BOOT_IMAGE=.*||')"
@@ -71,8 +70,7 @@ set_grub_config()
 {
 	ATTRIBUTE_ID="${1}"
 	ATTRIBUTE_VALUE="${2}"
-	sed -i "0,/${ATTRIBUTE_ID}/{s/${ATTRIBUTE_ID}=.*/${ATTRIBUTE_ID}=\"${ATTRIBUTE_VALUE}\"/}" "${GRUB32_CONFIG}"
-	sed -i "0,/${ATTRIBUTE_ID}/{s/${ATTRIBUTE_ID}=.*/${ATTRIBUTE_ID}=\"${ATTRIBUTE_VALUE}\"/}" "${GRUB64_CONFIG}"
+	sed -i "0,/${ATTRIBUTE_ID}/{s/${ATTRIBUTE_ID}=.*/${ATTRIBUTE_ID}=\"${ATTRIBUTE_VALUE}\"/}" "${GRUB_CONFIG}"
 }
 
 for _PARAMETER in ${APPEND}

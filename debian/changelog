@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.17-1) unstable; urgency=low
+
+  * fixed grub handling in bootmenu update script
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Tue, 05 Mar 2013 13:29:13 +0100
+
 lernstick-initscripts-wheezy (1.16-1) unstable; urgency=low
 
   * added support for grub config updates
