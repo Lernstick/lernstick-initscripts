@@ -99,6 +99,7 @@ do
 			fi
 	esac
 done
+
 # special handling for live-media config
 if grep -q "live-media=removable-usb" /proc/cmdline
 then
@@ -153,7 +154,6 @@ update_nonselected_option()
 		deselect_option "${2}"
 	fi
 }
-update_nonselected_option "persistence" "persistence"
 update_nonselected_option "quiet splash" "messages"
 update_nonselected_option "nolapic_timer" "lapic_timer"
 update_nonselected_option "nohz=off" "dynamic_ticks"
@@ -184,10 +184,26 @@ update_selected_grub_option()
 		set_grub_config "${ATTRIBUTE_ID}" ""
 	fi
 }
-update_selected_grub_option "persistence" "PERSISTENCE" "persistence forcepersistentfsck"
 update_selected_grub_option "swapon" "SWAP" "swapon"
 update_selected_grub_option "swapfile=auto" "SWAP_FILE" "swapfile=auto"
 update_selected_grub_option "quiet" "QUIET" "quiet splash"
+
+# special handling for persistence
+if grep -q "persistence" /proc/cmdline
+then
+	if grep -q "persistence-read-only" /proc/cmdline
+	then
+		select_config "persistence" "id" "ro"
+		set_grub_config "PERSISTENCE" "persistence persistence-read-only"
+	else
+		select_config "persistence" "id" "rw"
+		set_grub_config "PERSISTENCE" "persistence"
+	fi
+
+else
+	select_config "persistence" "id" "no"
+	set_grub_config "PERSISTENCE" ""
+fi
 
 # remount /live/image read-only
 mount -o remount,ro ${IMAGE_DIR}
