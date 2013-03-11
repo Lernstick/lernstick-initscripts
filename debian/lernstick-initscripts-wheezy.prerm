@@ -19,10 +19,10 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
+	update-rc.d lernstick-x11-settings-tools remove
 	update-rc.d live-desktop remove
 	update-rc.d live-locale remove
 	update-rc.d live-phonon remove
-	update-rc.d live-proprietary-x11-drivers remove
 	update-rc.d live-update-bootmenu remove
     ;;
 

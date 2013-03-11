@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.20-1) unstable; urgency=low
+
+  * replaced script for proprietary X11 drivers
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Mon, 11 Mar 2013 16:21:02 +0100
+
 lernstick-initscripts-wheezy (1.19-1) unstable; urgency=low
 
   * updated persistence support in bootmenu update scripts

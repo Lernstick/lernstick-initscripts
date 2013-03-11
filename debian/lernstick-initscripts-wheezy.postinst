@@ -20,10 +20,10 @@ set -e
 
 case "$1" in
     configure)
+	update-rc.d lernstick-x11-settings-tools defaults
 	update-rc.d live-desktop defaults
 	update-rc.d live-locale defaults
 	update-rc.d live-phonon defaults
-	update-rc.d live-proprietary-x11-drivers defaults
 	update-rc.d live-update-bootmenu defaults
     ;;
 

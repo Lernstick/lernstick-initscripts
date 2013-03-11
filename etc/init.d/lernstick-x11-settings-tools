@@ -1,0 +1,91 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:		  lernstick-x11-settings-tools
+# Required-Start:	$local_fs $remote_fs live-config
+# Required-Stop:	 $local_fs $remote_fs
+# Default-Start:	 2 3 4 5
+# Default-Stop:	  0 1 6
+# Short-Description: enables X11 display settins tools
+# Description:	   enables X11 drivers (NVIDIA , ATI, Xorg) display settings tools
+# X-Start-Before:	kdm gdm
+### END INIT INFO
+
+set -e
+
+setNoDisplay()
+{
+	DESKTOP_FILE="${1}"
+	if [ -f "${DESKTOP_FILE}" ]
+	then
+		VALUE="${2}"
+		if grep -q ^NoDisplay= "${DESKTOP_FILE}"
+		then
+			# the desktop file already has a "NoDisplay=" line
+			sed -i "s|^NoDisplay=.*|NoDisplay=${VALUE}|" "${DESKTOP_FILE}"
+		else
+			# the desktop file has NO "NoDisplay=" line yet
+			echo "NoDisplay=${VALUE}" >> "${DESKTOP_FILE}"
+		fi
+	fi
+}
+
+showApplication()
+{
+	setNoDisplay "${1}" "false"
+}
+
+hideApplication()
+{
+	setNoDisplay "${1}" "true"
+}
+
+activate_nvidia()
+{
+	# show NVIDIA settings in menu
+	showApplication /usr/share/applications/nvidia-settings.desktop
+
+	# activating NVIDIA implies removing ATI settings
+	remove_fglrx_settings
+}
+
+activate_fglrx()
+{
+	# show ATI settings in menu
+	showApplication /usr/share/applications/amdcccle.desktop
+
+	# activating ATI implies removing NVIDIA settings
+	remove_nvidia_settings
+}
+
+# mesa-diverted is the active alternative when xorg drivers are used
+activate_mesa-diverted()
+{
+	# remove ATI and NVIDIA settings
+	remove_fglrx_settings
+	remove_nvidia_settings
+}
+
+remove_fglrx_settings()
+{
+	# remove ATI settings from menu
+	hideApplication /usr/share/applications/amdcccle.desktop
+}
+
+remove_nvidia_settings()
+{
+	# remove NVIDIA settings from menu
+	hideApplication /usr/share/applications/nvidia-settings.desktop
+}
+
+find_driver() {
+    # live-configs X11 driver detection is run first, detect driver from
+    # glx alternative, this prints the choosen alternative
+    update-alternatives --display glx | sed -e '2 s|.* /usr/lib/|| ; 2 ! d'
+}
+
+
+# only run this when entering the runlevel
+[ "${1}" != "start" ] && exit 0
+
+DRIVER=$(find_driver)
+activate_$DRIVER

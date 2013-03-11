@@ -7,6 +7,6 @@ Standards-Version: 3.7.3
 
 Package: lernstick-initscripts-wheezy
 Architecture: all
-Depends: xmlstarlet, sysv-rc, lsb-release, insserv, sqlite3
+Depends: xmlstarlet, sysv-rc, lsb-release, insserv, sqlite3, live-config (>=3.0.21-1+lernstick2)
 Description: lernstick initscripts
  The required initscripts for the lernstick distribution.
