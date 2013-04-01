@@ -79,7 +79,7 @@ then
         	        ;;
 
         	pt)
-			set_bluej_language "portugese"
+			set_bluej_language "portuguese"
         	        ;;
 
         	ru)
