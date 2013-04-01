@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.21-1) unstable; urgency=low
+
+  * added support for BlueJ in live-locale
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Mon, 01 Apr 2013 15:53:09 +0200
+
 lernstick-initscripts-wheezy (1.20-1) unstable; urgency=low
 
   * replaced script for proprietary X11 drivers

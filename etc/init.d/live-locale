@@ -48,6 +48,41 @@ then
 		/home/user/.cmaptools/profile.xml
 fi
 
+# bluej
+BLUEJ_CONFIG_FILE="/home/user/.bluej/bluej.properties"
+if [ -e ${BLUEJ_CONFIG_FILE} ]
+then
+	case "${LANGUAGE}" in
+        	de)
+        	        sed -i -e 's|bluej.language=.*|bluej.language=german|1' ${BLUEJ_CONFIG_FILE}
+	                ;;
+
+        	es)
+        	        sed -i -e 's|bluej.language=.*|bluej.language=spanish|1' ${BLUEJ_CONFIG_FILE}
+	                ;;
+
+        	fr)
+        	        sed -i -e 's|bluej.language=.*|bluej.language=french|1' ${BLUEJ_CONFIG_FILE}
+	                ;;
+
+        	it)
+        	        sed -i -e 's|bluej.language=.*|bluej.language=italian|1' ${BLUEJ_CONFIG_FILE}
+        	        ;;
+
+        	pt)
+        	        sed -i -e 's|bluej.language=.*|bluej.language=portugese|1' ${BLUEJ_CONFIG_FILE}
+        	        ;;
+
+        	ru)
+        	        sed -i -e 's|bluej.language=.*|bluej.language=russian|1' ${BLUEJ_CONFIG_FILE}
+        	        ;;
+
+	        *)
+        	        sed -i -e '/bluej.language=.*/|d' ${BLUEJ_CONFIG_FILE}
+                	;;
+	esac
+fi
+
 # tuxtype
 TUXTYPE_CONFIG_FILE="/home/user/.tuxtype/settings.txt"
 if [ -e ${TUXTYPE_CONFIG_FILE} ]
