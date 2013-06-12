@@ -87,7 +87,7 @@ then
         	        ;;
 
 	        *)
-        	        sed -i -e '/bluej.language=.*/|d' ${BLUEJ_CONFIG_FILE}
+        	        sed -i -e '/bluej.language=.*/d' ${BLUEJ_CONFIG_FILE}
                 	;;
 	esac
 fi
