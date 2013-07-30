@@ -1,3 +1,10 @@
+lernstick-initscripts-wheezy (1.24-2) lernstick; urgency=low
+
+  * [5916] Don't rerun live-locale if not changing language
+  * [1823] Delete no longer used .mo files
+
+ -- Gaudenz Steinlin <gaudenz@debian.org>  Tue, 30 Jul 2013 14:18:36 +0200
+
 lernstick-initscripts-wheezy (1.24-1) unstable; urgency=low
 
   * fixed sed expression error in live-locale script
