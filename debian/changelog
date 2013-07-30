@@ -1,4 +1,4 @@
-lernstick-initscripts-wheezy (1.24-2) lernstick; urgency=low
+lernstick-initscripts-wheezy (1.25) lernstick; urgency=low
 
   * [5916] Don't rerun live-locale if not changing language
   * [1823] Delete no longer used .mo files
