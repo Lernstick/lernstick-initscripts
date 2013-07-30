@@ -22,6 +22,10 @@
 
 set -e
 
+# script version, increment if script should rerun even if not changing the
+# language
+VERSION=1
+
 # Reading kernel arguments
 for ARGUMENT in $(cat /proc/cmdline)
 do
@@ -33,6 +37,16 @@ do
 
 	esac
 done
+
+# state file, format LOCALE;VERSION
+LOCALE_STATE_FILE="/var/lib/live/lernstick-config/locale-fixup"
+if [ -r ${LOCALE_STATE_FILE} ] && [ "${LOCALE};${VERSION}" = "$(cat ${LOCALE_STATE_FILE})" ]
+then
+    # locale already set, nothing to do
+    exit 0
+else
+    echo "${LOCALE};${VERSION}" > $LOCALE_STATE_FILE
+fi
 
 # Audacity
 if [ -e /home/user/.audacity-data/audacity.cfg ]
