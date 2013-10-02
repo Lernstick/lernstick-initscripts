@@ -12,6 +12,9 @@
 # description: Updates the [sys/iso]linux and grub menu config
 #
 
+LOGFILE=/var/log/live-update-bootmenu
+> ${LOGFILE}
+
 IMAGE_DIR="/lib/live/mount/medium/"
 
 # the image directory must be remounted writeable
@@ -19,6 +22,9 @@ IMAGE_DIR="/lib/live/mount/medium/"
 if ! mount -o remount,rw ${IMAGE_DIR}
 then
 	# it's ok, system was probably booted from iso...
+	echo "The image directory \"${IMAGE_DIR}\" could not be remounted in read-write mode." >> ${LOGFILE}
+	echo "The system was probably booted from DVD." >> ${LOGFILE}
+	echo "Exiting..." >> ${LOGFILE}
 	exit 0
 fi
 
@@ -30,7 +36,8 @@ elif [ -d ${IMAGE_DIR}/syslinux/ ]
 then
 	CONFIG_DIR="${IMAGE_DIR}/syslinux"
 else
-	echo "no supported configuration found"
+	echo "There was neither an isolinux nor a syslinux configuration in \"${IMAGE_DIR}\"." >> ${LOGFILE}
+	echo "Exiting..." >> ${LOGFILE}
 	exit 1
 fi
 
@@ -44,18 +51,25 @@ fi
 if [ ! -w ${CONFIG_DIR} ]
 then
 	# it's ok, system was probably booted from iso...
+	echo "The configuration directory \"${CONFIG_DIR}\" is not writable." >> ${LOGFILE}
+	echo "The system was probably booted from DVD." >> ${LOGFILE}
+	echo "Exiting..." >> ${LOGFILE}
 	exit 0
 fi
 
 XMLBOOT_CONFIG="${CONFIG_DIR}/xmlboot.config"
 GRUB_CONFIG="${IMAGE_DIR}/boot/grub/grub.cfg"
+echo "XMLBOOT_CONFIG: \"${XMLBOOT_CONFIG}\"" >> ${LOGFILE}
+echo "GRUB_CONFIG: \"${GRUB_CONFIG}\"" >> ${LOGFILE}
 
 # get current append line
 APPEND="$(cat /proc/cmdline | sed -e 's| BOOT_IMAGE=.*||')"
+echo "APPEND: \"${APPEND}\"" >> ${LOGFILE}
 
 # update configs in xmlboot config file
 select_config()
 {
+	echo "select_config ${1} ${2} ${3}" >> ${LOGFILE}
 	CONFIG_ID="${1}"
 	ATTRIBUTE_ID="${2}"
 	ATTRIBUTE_VALUE="${3}"
@@ -68,6 +82,7 @@ select_config()
 
 set_grub_config()
 {
+	echo "set_grub_config ${1} ${2}" >> ${LOGFILE}
 	ATTRIBUTE_ID="${1}"
 	ATTRIBUTE_VALUE="${2}"
 	sed -i "0,/${ATTRIBUTE_ID}/{s/${ATTRIBUTE_ID}=.*/${ATTRIBUTE_ID}=\"${ATTRIBUTE_VALUE}\"/}" "${GRUB_CONFIG}"
@@ -117,6 +132,7 @@ fi
 # update options in xmlboot config file
 deselect_option()
 {
+	echo "deselect_option ${1}" >> ${LOGFILE}
 	cat ${XMLBOOT_CONFIG} | \
 	xmlstarlet ed -d "/xmlboot/options/option[@id='${1}']/@selected" \
 		> ${XMLBOOT_CONFIG}.tmp
@@ -125,6 +141,7 @@ deselect_option()
 
 select_option()
 {
+	echo "select_option ${1}" >> ${LOGFILE}
 	cat ${XMLBOOT_CONFIG} | \
 	xmlstarlet ed -d "/xmlboot/options/option[@id='${1}']/@selected" | \
 	xmlstarlet ed -i "/xmlboot/options/option[@id='${1}']" \
@@ -206,4 +223,6 @@ else
 fi
 
 # remount /live/image read-only
+echo "remounting ${IMAGE_DIR} read-only" >> ${LOGFILE}
 mount -o remount,ro ${IMAGE_DIR}
+echo "Done." >> ${LOGFILE}

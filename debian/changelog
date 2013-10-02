@@ -1,4 +1,10 @@
-lernstick-initscripts-wheezy (1.25) lernstick; urgency=low
+lernstick-initscripts-wheezy (1.26-1) unstable; urgency=low
+
+  * logfile for live-update-bootmenu 
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Wed, 02 Oct 2013 11:53:35 +0200
+
+lernstick-initscripts-wheezy (1.25-1) unstable; urgency=low
 
   * [5916] Don't rerun live-locale if not changing language
   * [1823] Delete no longer used .mo files
