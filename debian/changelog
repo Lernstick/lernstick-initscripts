@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.27-1) unstable; urgency=low
+
+  * support custom options in GRUB
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Mon, 07 Oct 2013 10:14:44 +0200
+
 lernstick-initscripts-wheezy (1.26-1) unstable; urgency=low
 
   * logfile for live-update-bootmenu 
