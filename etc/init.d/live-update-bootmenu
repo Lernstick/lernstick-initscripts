@@ -63,7 +63,7 @@ echo "XMLBOOT_CONFIG: \"${XMLBOOT_CONFIG}\"" >> ${LOGFILE}
 echo "GRUB_CONFIG: \"${GRUB_CONFIG}\"" >> ${LOGFILE}
 
 # get current append line
-APPEND="$(cat /proc/cmdline | sed -e 's| BOOT_IMAGE=.*||')"
+APPEND="$(cat /proc/cmdline | sed 's|BOOT_IMAGE=.*||')"
 echo "APPEND: \"${APPEND}\"" >> ${LOGFILE}
 
 # update configs in xmlboot config file
@@ -175,7 +175,7 @@ update_nonselected_option "quiet splash" "messages"
 update_nonselected_option "nolapic_timer" "lapic_timer"
 update_nonselected_option "nohz=off" "dynamic_ticks"
 
-CUSTOM_OPTIONS="$(cat /proc/cmdline | grep "custom_options" | sed 's|.*custom_options \(.*\)|\1|1')"
+CUSTOM_OPTIONS="$(cat /proc/cmdline | grep "custom_options" | sed 's|.*custom_options\s*\(.*\)|\1|1')"
 echo "CUSTOM_OPTIONS: \"${CUSTOM_OPTIONS}\"" >> ${LOGFILE}
 cat ${XMLBOOT_CONFIG} | \
 xmlstarlet ed -u "/xmlboot/custom_options/@text" -v "${CUSTOM_OPTIONS}" > ${XMLBOOT_CONFIG}.tmp
