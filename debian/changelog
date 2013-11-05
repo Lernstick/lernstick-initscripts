@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.28-1) unstable; urgency=low
+
+  * fixed custom options detection
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Tue, 05 Nov 2013 10:14:22 +0100
+
 lernstick-initscripts-wheezy (1.27-1) unstable; urgency=low
 
   * support custom options in GRUB
