@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.29-1) unstable; urgency=low
+
+  * fixed boot menu update script
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Thu, 05 Dec 2013 10:12:25 +0100
+
 lernstick-initscripts-wheezy (1.28-1) unstable; urgency=low
 
   * fixed custom options detection

@@ -63,7 +63,7 @@ echo "XMLBOOT_CONFIG: \"${XMLBOOT_CONFIG}\"" >> ${LOGFILE}
 echo "GRUB_CONFIG: \"${GRUB_CONFIG}\"" >> ${LOGFILE}
 
 # get current append line
-APPEND="$(cat /proc/cmdline | sed 's|BOOT_IMAGE=.*||')"
+APPEND="$(cat /proc/cmdline | sed 's|BOOT_IMAGE=\S* ||')"
 echo "APPEND: \"${APPEND}\"" >> ${LOGFILE}
 
 # update configs in xmlboot config file
