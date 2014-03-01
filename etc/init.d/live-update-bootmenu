@@ -15,17 +15,30 @@
 LOGFILE=/var/log/live-update-bootmenu
 > ${LOGFILE}
 
-IMAGE_DIR="/lib/live/mount/medium/"
-
-# the image directory must be remounted writeable
-# so that we can edit the config files
-if ! mount -o remount,rw ${IMAGE_DIR}
+BOOT_LABEL="boot"
+BOOT_BLOCK_DEVICE="$(/sbin/blkid -t LABEL="${BOOT_LABEL}" -o device)"
+echo "BOOT_BLOCK_DEVICE: \"${BOOT_BLOCK_DEVICE}\"" >> ${LOGFILE}
+if [ $(echo "$BOOT_BLOCK_DEVICE" | wc -l) -eq 1 ]
 then
-	# it's ok, system was probably booted from iso...
-	echo "The image directory \"${IMAGE_DIR}\" could not be remounted in read-write mode." >> ${LOGFILE}
-	echo "The system was probably booted from DVD." >> ${LOGFILE}
-	echo "Exiting..." >> ${LOGFILE}
-	exit 0
+        echo "Temporary mount of boot partition ..." >> ${LOGFILE}
+	udisks --mount ${BOOT_BLOCK_DEVICE} > /dev/null 2>&1
+	IMAGE_DIR="$(cat /proc/mounts | grep ${BOOT_BLOCK_DEVICE} | awk '{ print $2 }')"
+	BOOT_TMP_MOUNT="true"
+else
+        echo "There is not *exactly one* "${LABEL}" partition. Trying with legacy version..." >> ${LOGFILE}
+	# assume that we are on a legacy system (without a separate boot partition)
+	IMAGE_DIR="/lib/live/mount/medium/"
+
+	# the image directory must be remounted writeable
+	# so that we can edit the config files
+	if ! mount -o remount,rw ${IMAGE_DIR}
+	then
+		# it's ok, system was probably booted from iso...
+		echo "The image directory \"${IMAGE_DIR}\" could not be remounted in read-write mode." >> ${LOGFILE}
+		echo "The system was probably booted from DVD." >> ${LOGFILE}
+		echo "Exiting..." >> ${LOGFILE}
+		exit 0
+	fi
 fi
 
 # determine correct configuration directory
@@ -224,7 +237,13 @@ else
 	set_grub_config "PERSISTENCE" ""
 fi
 
-# remount /live/image read-only
-echo "remounting ${IMAGE_DIR} read-only" >> ${LOGFILE}
-mount -o remount,ro ${IMAGE_DIR}
+if [ -n "${BOOT_TMP_MOUNT}" ]
+then
+	echo "unmounting ${BOOT_BLOCK_DEVICE}" >> ${LOGFILE}
+	umount ${BOOT_BLOCK_DEVICE}
+else
+	echo "remounting ${IMAGE_DIR} read-only" >> ${LOGFILE}
+	mount -o remount,ro ${IMAGE_DIR}
+fi
+
 echo "Done." >> ${LOGFILE}

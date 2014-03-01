@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.30-1) unstable; urgency=low
+
+  * added support for separate boot partition in live-update-bootmenu
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Sat, 01 Mar 2014 14:43:18 +0100
+
 lernstick-initscripts-wheezy (1.29-1) unstable; urgency=low
 
   * fixed boot menu update script
