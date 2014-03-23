@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          live-update-bootmenu
 # Required-Start:    $local_fs $remote_fs
@@ -18,7 +18,7 @@ LOGFILE=/var/log/live-update-bootmenu
 BOOT_LABEL="boot"
 BOOT_BLOCK_DEVICE="$(/sbin/blkid -t LABEL="${BOOT_LABEL}" -o device)"
 echo "BOOT_BLOCK_DEVICE: \"${BOOT_BLOCK_DEVICE}\"" >> ${LOGFILE}
-if [ $(echo "$BOOT_BLOCK_DEVICE" | wc -l) -eq 1 ]
+if [ -n "${BOOT_BLOCK_DEVICE}" ] -a [ $(echo "$BOOT_BLOCK_DEVICE" | wc -l) -eq 1 ]
 then
         echo "Temporary mount of boot partition ..." >> ${LOGFILE}
 	udisks --mount ${BOOT_BLOCK_DEVICE} > /dev/null 2>&1
