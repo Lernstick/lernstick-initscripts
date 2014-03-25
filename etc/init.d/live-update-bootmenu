@@ -1,7 +1,7 @@
 #!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          live-update-bootmenu
-# Required-Start:    $local_fs $remote_fs
+# Required-Start:    $local_fs $remote_fs dbus
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      
@@ -18,10 +18,10 @@ LOGFILE=/var/log/live-update-bootmenu
 BOOT_LABEL="boot"
 BOOT_BLOCK_DEVICE="$(/sbin/blkid -t LABEL="${BOOT_LABEL}" -o device)"
 echo "BOOT_BLOCK_DEVICE: \"${BOOT_BLOCK_DEVICE}\"" >> ${LOGFILE}
-if [ -n "${BOOT_BLOCK_DEVICE}" ] -a [ $(echo "$BOOT_BLOCK_DEVICE" | wc -l) -eq 1 ]
+if [ -n "${BOOT_BLOCK_DEVICE}" -a $(echo "$BOOT_BLOCK_DEVICE" | wc -l) -eq 1 ]
 then
         echo "Temporary mount of boot partition ..." >> ${LOGFILE}
-	udisks --mount ${BOOT_BLOCK_DEVICE} > /dev/null 2>&1
+	udisks --mount ${BOOT_BLOCK_DEVICE}  >> ${LOGFILE} 2>&1
 	IMAGE_DIR="$(cat /proc/mounts | grep ${BOOT_BLOCK_DEVICE} | awk '{ print $2 }')"
 	BOOT_TMP_MOUNT="true"
 else
@@ -42,6 +42,7 @@ else
 fi
 
 # determine correct configuration directory
+echo "IMAGE_DIR: \"${IMAGE_DIR}\"" >> ${LOGFILE}
 if [ -d ${IMAGE_DIR}/isolinux/ ]
 then
 	CONFIG_DIR="${IMAGE_DIR}/isolinux"
