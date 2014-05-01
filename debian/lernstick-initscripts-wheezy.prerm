@@ -24,6 +24,7 @@ case "$1" in
 	update-rc.d live-locale remove
 	update-rc.d live-phonon remove
 	update-rc.d live-update-bootmenu remove
+	update-rc.d unlock-kde remove
     ;;
 
     failed-upgrade)

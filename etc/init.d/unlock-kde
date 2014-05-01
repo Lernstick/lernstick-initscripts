@@ -1,0 +1,23 @@
+#!/bin/sh -e
+### BEGIN INIT INFO
+# Provides:          unlock-kde
+# Required-Start:    $local_fs $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      
+# Short-Description: Unlocks the KDE Plasma applets config files
+# Description:       Unlocks the KDE Plasma applets config files
+# X-Start-Before:    kdm gdm
+### END INIT INFO
+#
+# description: unlocks the KDE Plasma applets config file
+#
+
+CONFIG_FILE="/etc/lernstickWelcome"
+
+# unlock KDE plasma desktop
+if grep -q "LockKDE=true" ${CONFIG_FILE}
+then
+        echo "unlock KDE plasma desktop"
+        chmod 644 /home/user/.kde/share/config/plasma-desktop-appletsrc
+fi

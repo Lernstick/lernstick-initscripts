@@ -25,6 +25,7 @@ case "$1" in
 	update-rc.d live-locale defaults
 	update-rc.d live-phonon defaults
 	update-rc.d live-update-bootmenu defaults
+	update-rc.d unlock-kde defaults
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
