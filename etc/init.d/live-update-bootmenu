@@ -196,14 +196,6 @@ xmlstarlet ed -u "/xmlboot/custom_options/@text" -v "${CUSTOM_OPTIONS}" > ${XMLB
 mv ${XMLBOOT_CONFIG}.tmp ${XMLBOOT_CONFIG}
 set_grub_config "CUSTOM_OPTIONS" "${CUSTOM_OPTIONS}"
 
-# special handling for PAE
-if grep -q initrd2 /proc/cmdline
-then
-	select_option "pae"
-else
-	deselect_option "pae"
-fi
-
 # some more grub specific handling
 update_selected_grub_option()
 {
