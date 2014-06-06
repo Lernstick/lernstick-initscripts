@@ -166,10 +166,15 @@ do
 done
 
 # special handling for live-media config
+# (removable-usb is deprecated!)
 if grep -q "live-media=removable-usb" /proc/cmdline
 then
 	select_config "live-media" "id" "removable-usb"
 	set_grub_config "LIVE_MEDIA" "live-media=removable-usb live-media-timeout=10"
+elif grep -q "live-media=usb" /proc/cmdline
+then
+	select_config "live-media" "id" "usb"
+	set_grub_config "LIVE_MEDIA" "live-media=usb live-media-timeout=10"
 elif grep -q "live-media=removable" /proc/cmdline
 then
 	select_config "live-media" "id" "removable"
