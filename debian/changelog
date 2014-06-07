@@ -1,3 +1,15 @@
+lernstick-initscripts-wheezy (1.39-1) unstable; urgency=low
+
+  * dont fail when there is no bootloader config in exchange partition
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Sat, 07 Jun 2014 16:20:36 +0200
+
+lernstick-initscripts-wheezy (1.38-1) unstable; urgency=low
+
+  * update boot menu also in exchange partition (if there)
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Sat, 07 Jun 2014 14:50:56 +0200
+
 lernstick-initscripts-wheezy (1.37-1) unstable; urgency=low
 
   * added case for new handling of usb live media
