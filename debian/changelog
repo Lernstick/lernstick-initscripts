@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.40-1) unstable; urgency=low
+
+  * support greenfoot in locale switching
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Fri, 27 Jun 2014 11:10:58 +0200
+
 lernstick-initscripts-wheezy (1.39-1) unstable; urgency=low
 
   * dont fail when there is no bootloader config in exchange partition
