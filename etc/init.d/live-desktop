@@ -46,11 +46,8 @@ case "${LIVE_DESKTOP}" in
 
         xfce)
                 echo "setting up xfce as default desktop" >> ${LOGFILE}
-		cat > /home/user/.dmrc << EOF
-[Desktop]
-Session=xfce
-EOF
-                echo "/usr/bin/kdm" > /etc/X11/default-display-manager
+                update-alternatives --set x-session-manager /usr/bin/xfce4-session >> ${LOGFILE} 2>&1
+                echo "/usr/bin/gdm3" > /etc/X11/default-display-manager
                 ;;
 
 

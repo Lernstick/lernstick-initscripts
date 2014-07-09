@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.41-1) unstable; urgency=low
+
+  * use gmd3 for xfce4 sessions to support user switching
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Wed, 09 Jul 2014 15:36:13 +0200
+
 lernstick-initscripts-wheezy (1.40-1) unstable; urgency=low
 
   * support greenfoot in locale switching
