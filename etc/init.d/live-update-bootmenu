@@ -226,7 +226,7 @@ update_bootloaders() {
 	update_selected_grub_option "quiet" "QUIET" "quiet splash"
 
 	# special handling for persistence
-	if grep -q "persistence" /proc/cmdline
+	if grep -q "persistence " /proc/cmdline
 	then
 		if grep -q "persistence-read-only" /proc/cmdline
 		then
