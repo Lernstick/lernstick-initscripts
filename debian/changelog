@@ -1,3 +1,15 @@
+lernstick-initscripts-wheezy (1.44-1) unstable; urgency=low
+
+  * fixed persistence-media option for usb devices
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Fri, 10 Oct 2014 21:21:56 +0200
+
+lernstick-initscripts-wheezy (1.43-1) unstable; urgency=low
+
+  * added support for persistence-media option to live-update-bootmenu script
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Fri, 10 Oct 2014 17:17:34 +0200
+
 lernstick-initscripts-wheezy (1.42-1) unstable; urgency=low
 
   * fixed persistence boot menu update
