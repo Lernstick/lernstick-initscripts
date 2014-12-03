@@ -29,6 +29,11 @@ get_partition_label() {
 	echo "$(/sbin/blkid ${PARTITION} -o udev | grep "ID_FS_LABEL=" | awk -F= '{ print $2 }')"
 }
 
+get_partition_fstype() {
+	PARTITION=$1
+	echo "$(/sbin/blkid ${PARTITION} -o udev | grep "ID_FS_TYPE=" | awk -F= '{ print $2 }')"
+}
+
 get_mountpoint() {
 	PARTITION=$1
 	echo "$(cat /proc/mounts | grep ${PARTITION} | awk '{ print $2 }')"
@@ -116,7 +121,6 @@ update_selected_grub_option()
 }
 
 update_bootloaders() {
-	FAIL_IF_MISSING="$1"
 
 	# determine correct configuration directory
 	echo "IMAGE_DIR: \"${IMAGE_DIR}\"" >> ${LOGFILE}
@@ -128,13 +132,7 @@ update_bootloaders() {
 		CONFIG_DIR="${IMAGE_DIR}/syslinux"
 	else
 		echo "There was neither an isolinux nor a syslinux configuration in \"${IMAGE_DIR}\"." >> ${LOGFILE}
-		echo "Exiting..." >> ${LOGFILE}
-		if [ "${FAIL_IF_MISSING}" = "true" ]
-		then
-			exit 1
-		else
-			exit 0
-		fi
+		return 1
 	fi
 
 	# check writability of configuration directory
@@ -149,8 +147,7 @@ update_bootloaders() {
 		# it's ok, system was probably booted from iso...
 		echo "The configuration directory \"${CONFIG_DIR}\" is not writable." >> ${LOGFILE}
 		echo "The system was probably booted from DVD." >> ${LOGFILE}
-		echo "Exiting..." >> ${LOGFILE}
-		exit 0
+		return 0
 	fi
 
 	XMLBOOT_CONFIG="${CONFIG_DIR}/xmlboot.config"
@@ -270,9 +267,9 @@ echo "first label: \"${FIRST_LABEL}\"" >> ${LOGFILE}
 
 if [ "${FIRST_LABEL}" = "${BOOT_LABEL}" ]
 then
-	# system uses the current partitioning schema with a separate boot partition
+	echo "system uses the current partitioning schema with a separate boot partition" >> ${LOGFILE}
 	mount_boot_partition ${FIRST_PARTITION}
-	update_bootloaders "true"
+	update_bootloaders
 else
 	SECOND_PARTITION="$(get_partition 2)"
 	echo "second partition: \"${SECOND_PARTITION}\"" >> ${LOGFILE}
@@ -280,29 +277,40 @@ else
 	echo "second label: \"${SECOND_LABEL}\"" >> ${LOGFILE}
 	if [ "${SECOND_LABEL}" = "${BOOT_LABEL}" ]
 	then
-		# system uses the current partitioning schema with a separate boot partition
-		# but for legacy (removable) USB flash drives
-		mount_boot_partition ${SECOND_PARTITION}
-		update_bootloaders "true"
+		echo "system uses the current partitioning schema with a separate boot partition" >> ${LOGFILE}
+		echo "but for legacy (removable) USB flash drives" >> ${LOGFILE}
 
-		# update boot loader config on exchange partition
-		IMAGE_DIR="$(get_mountpoint ${FIRST_PARTITION})"
-		if [ -n "${IMAGE_DIR}" ]
+		echo "updating boot loader config on boot partition" >> ${LOGFILE}
+		mount_boot_partition ${SECOND_PARTITION}
+		update_bootloaders
+
+		FS_TYPE="$(get_partition_fstype ${FIRST_PARTITION})"
+		echo "file system of exchange partiton: ${FS_TYPE}" >> ${LOGFILE}
+		if [ "${FS_TYPE}" = "vfat" ]
 		then
-			update_bootloaders "false"
-		else
-			udisks --mount ${FIRST_PARTITION}
+			echo "must update bootloader on exchange partition" >> ${LOGFILE}
 			IMAGE_DIR="$(get_mountpoint ${FIRST_PARTITION})"
-			update_bootloaders "false"
-			udisks --unmount ${FIRST_PARTITION}
+			if [ -n "${IMAGE_DIR}" ]
+			then
+				echo "exchange partition was already mounted" >> ${LOGFILE}
+				update_bootloaders
+			else
+				echo "exchange partition was NOT already mounted" >> ${LOGFILE}
+				udisks --mount ${FIRST_PARTITION}
+				IMAGE_DIR="$(get_mountpoint ${FIRST_PARTITION})"
+				update_bootloaders
+				udisks --unmount ${FIRST_PARTITION}
+			fi
+		else
+			echo "no bootloader needed on exchange partition" >> ${LOGFILE}
 		fi
 
 	else
-		# system uses the legacy partitioning schema without a separate boot partition
+		echo "system uses the legacy partitioning schema without a separate boot partition" >> ${LOGFILE}
 		if mount -o remount,rw "${LIVE_MOUNTPOINT}"
 		then
 			IMAGE_DIR="${LIVE_MOUNTPOINT}"
-			update_bootloaders "true"
+			update_bootloaders
 		else
 			# it's ok, system was probably booted from iso...
 			echo "The image directory \"${LIVE_MOUNTPOINT}\" could not be remounted in read-write mode." >> ${LOGFILE}
@@ -313,14 +321,13 @@ else
 	fi
 fi
 
-
 if [ -n "${BOOT_TMP_MOUNT}" ]
 then
 	echo "unmounting ${BOOT_PARTITION}" >> ${LOGFILE}
-	umount ${BOOT_PARTITION}
+	umount ${BOOT_PARTITION} >> ${LOGFILE} 2>&1
 else
 	echo "remounting ${IMAGE_DIR} read-only" >> ${LOGFILE}
-	mount -o remount,ro ${IMAGE_DIR}
+	mount -o remount,ro ${IMAGE_DIR} >> ${LOGFILE} 2>&1
 fi
 
 echo "Done." >> ${LOGFILE}
