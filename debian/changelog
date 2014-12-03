@@ -1,3 +1,9 @@
+lernstick-initscripts-wheezy (1.45-1) unstable; urgency=low
+
+  * [273c] fixed unmounting of temporary mounted partitions in live-update-bootmenu
+
+ -- Ronny Standtke <ronny.standtke@fhnw.ch>  Wed, 03 Dec 2014 13:31:33 +0100
+
 lernstick-initscripts-wheezy (1.44-1) unstable; urgency=low
 
   * fixed persistence-media option for usb devices
